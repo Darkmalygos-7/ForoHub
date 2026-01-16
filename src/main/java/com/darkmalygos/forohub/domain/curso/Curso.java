@@ -19,5 +19,11 @@ public class Curso {
     private String nombre;
     @Enumerated(EnumType.STRING)
     private Categoria categoria;
+
+    public Curso(DatosRegistroCurso datos) {
+        this.id = null;
+        this.nombre = datos.nombre();
+        this.categoria = datos.categoria();
+    }
 }
 
