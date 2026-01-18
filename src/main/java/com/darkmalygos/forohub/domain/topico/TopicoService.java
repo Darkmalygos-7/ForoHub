@@ -4,6 +4,7 @@ import com.darkmalygos.forohub.domain.curso.Curso;
 import com.darkmalygos.forohub.domain.curso.CursoRepository;
 import com.darkmalygos.forohub.domain.usuario.Usuario;
 import com.darkmalygos.forohub.domain.usuario.UsuarioRepository;
+import com.darkmalygos.forohub.infra.exceptions.ValidacionException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ValidationException;
 import jakarta.validation.constraints.NotNull;
@@ -27,10 +28,10 @@ public class TopicoService {
 
     public Topico registrar(DatosRegistroTopico datos){
         if(topicoRepository.existsByTituloAndMensaje(datos.titulo(), datos.mensaje())){
-            throw new ValidationException("Ya existe un tópico con el mismo título y mensaje");
+            throw new ValidacionException("Ya existe un tópico con el mismo título y mensaje");
         }
-        Usuario usuario = usuarioRepository.findById(datos.autorId()).orElseThrow(() -> new ValidationException("Usuario no existe"));
-        Curso curso = cursoRepository.findById(datos.cursoId()).orElseThrow(() -> new ValidationException("Curso no existe"));
+        Usuario usuario = usuarioRepository.findById(datos.autorId()).orElseThrow(() -> new ValidacionException("Usuario no existe"));
+        Curso curso = cursoRepository.findById(datos.cursoId()).orElseThrow(() -> new ValidacionException("Curso no existe"));
         Topico topico = new Topico(datos.titulo(), datos.mensaje(),usuario, curso);
         return topicoRepository.save(topico);
     }
@@ -47,17 +48,17 @@ public class TopicoService {
     public Topico actualizar(@NotNull Long id, DatosActualizacionTopicos datos) {
         Optional<Topico> optionalTopico = topicoRepository.findById(id);
         if(!optionalTopico.isPresent()){
-            throw new ValidationException("Topico no encontrado");
+            throw new ValidacionException("Topico no encontrado");
         }
         Topico topico = optionalTopico.get();
         boolean duplicado = topicoRepository.existsByTituloAndMensaje(datos.titulo(), datos.mensaje());
         if (duplicado && (!topico.getTitulo().equals(datos.titulo()) || !topico.getMensaje().equals(datos.mensaje()))) {
-            throw new IllegalArgumentException("Tópico duplicado");
+            throw new ValidacionException("Tópico duplicado");
         }
         Curso curso = null;
         if (datos.cursoId() != null) {
             curso = cursoRepository.findById(datos.cursoId())
-                    .orElseThrow(() -> new EntityNotFoundException("Curso no encontrado"));
+                    .orElseThrow(() -> new ValidacionException("Curso no encontrado"));
         }
         topico.actualizarTopico(datos,curso);
         return topico;
@@ -66,7 +67,7 @@ public class TopicoService {
     public Topico eliminar(Long id) {
         Optional<Topico> optionalTopico = topicoRepository.findById(id);
         if(!optionalTopico.isPresent()){
-            throw new ValidationException("Topico no encontrado");
+            throw new ValidacionException("Topico no encontrado");
         }
         Topico topico = optionalTopico.get();
         topico.eliminar();
